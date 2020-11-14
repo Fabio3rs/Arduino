@@ -238,9 +238,14 @@ public class Editor extends JFrame implements RunnerListener {
   private Runnable timeoutUploadHandler;
 
   private Map<String, Tool> internalToolCache = new HashMap<String, Tool>();
+  
+  public PreferencesProxy localPreferences = new PreferencesProxy();
 
   public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
     super("Arduino");
+    localPreferences.init(file.getAbsolutePath());
+    //ibase.preferencesData = localPreferences;
+
     this.base = ibase;
     this.platform = platform;
 
@@ -381,6 +386,8 @@ public class Editor extends JFrame implements RunnerListener {
 
     // default the console output to the last opened editor
     EditorConsole.setCurrentEditorConsole(console);
+
+    localPreferences.save();
   }
 
 

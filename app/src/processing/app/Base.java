@@ -125,6 +125,8 @@ public class Base {
   private PdeKeywords pdeKeywords;
   private final List<JMenuItem> recentSketchesMenuItems = new LinkedList<>();
 
+  PreferencesProxy localPreferences = new PreferencesProxy();
+
   static public void main(String args[]) throws Exception {
     if (!OSUtils.isWindows()) {
       // Those properties helps enabling anti-aliasing on Linux
@@ -1132,7 +1134,7 @@ public class Base {
     importMenu.addSeparator();
 
     // Split between user supplied libraries and IDE libraries
-    TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform();
+    TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform(getPrefProxy());
 
     if (targetPlatform != null) {
       LibraryList libs = getSortedLibraries();
@@ -1189,7 +1191,7 @@ public class Base {
     String boardId = null;
     String referencedPlatformName = null;
     String myArch = null;
-    TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform();
+    TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform(getPrefProxy());
     if (targetPlatform != null) {
       myArch = targetPlatform.getId();
       boardId = BaseNoGui.getTargetBoard().getName();
@@ -1346,7 +1348,7 @@ public class Base {
     BaseNoGui.onBoardOrPortChange();
 
     // reload keywords when package/platform changes
-    TargetPlatform tp = BaseNoGui.getTargetPlatform();
+    TargetPlatform tp = BaseNoGui.getTargetPlatform(getPrefProxy());
     if (tp != null) {
       String platformFolder = tp.getFolder().getAbsolutePath();
       if (priorPlatformFolder == null || !priorPlatformFolder.equals(platformFolder) || newLibraryImported) {
@@ -1555,14 +1557,36 @@ public class Base {
     return platform.getId() + "_" + platform.getFolder();
   }
 
+  public void selectLocalBoard(TargetBoard targetBoard, PreferencesProxy prefData) {
+    TargetPlatform targetPlatform = targetBoard.getContainerPlatform();
+    TargetPackage targetPackage = targetPlatform.getContainerPackage();
+
+    prefData.set("target_package", targetPackage.getId());
+    prefData.set("target_platform", targetPlatform.getId());
+    prefData.set("board", targetBoard.getId());
+
+    File platformFolder = targetPlatform.getFolder();
+    prefData.set("runtime.platform.path", platformFolder.getAbsolutePath());
+    prefData.set("runtime.hardware.path", platformFolder.getParentFile().getAbsolutePath());
+
+    prefData.save();
+  }
+  
+  PreferencesProxy getPrefProxy()
+  {
+      return activeEditor != null? activeEditor.localPreferences : localPreferences;
+  }
+
   private JRadioButtonMenuItem createBoardMenusAndCustomMenus(
           final List<JMenu> boardsCustomMenus, List<JMenuItem> menuItemsToClickAfterStartup,
           Map<String, ButtonGroup> buttonGroupsMap,
           TargetBoard board, TargetPlatform targetPlatform, TargetPackage targetPackage)
           throws Exception {
-    String selPackage = PreferencesData.get("target_package");
-    String selPlatform = PreferencesData.get("target_platform");
-    String selBoard = PreferencesData.get("board");
+    
+    
+    String selPackage = getPrefProxy().get("target_package");
+    String selPlatform = getPrefProxy().get("target_platform");
+    String selBoard = getPrefProxy().get("board");
 
     String boardId = board.getId();
     String packageName = targetPackage.getId();
@@ -1572,7 +1596,7 @@ public class Base {
     @SuppressWarnings("serial")
     Action action = new AbstractAction(board.getName()) {
       public void actionPerformed(ActionEvent actionevent) {
-        BaseNoGui.selectBoard((TargetBoard) getValue("b"));
+        selectLocalBoard((TargetBoard) getValue("b"), getPrefProxy());
         filterVisibilityOfSubsequentBoardMenus(boardsCustomMenus, (TargetBoard) getValue("b"), 1);
 
         onBoardOrPortChange();

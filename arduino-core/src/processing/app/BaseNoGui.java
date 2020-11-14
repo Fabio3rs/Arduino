@@ -105,6 +105,8 @@ public class BaseNoGui {
 
   private static File buildCache;
 
+  public static PreferencesProxy preferencesData = new PreferencesProxy();
+
   // Returns a File object for the given pathname. If the pathname
   // is not absolute, it is interpreted relative to the current
   // directory when starting the IDE (which is not the same as the
@@ -394,9 +396,15 @@ public class BaseNoGui {
    *
    * @return
    */
+  static public TargetPlatform getTargetPlatform(PreferencesProxy prx) {
+    String packageName = prx.get("target_package");
+    String platformName = prx.get("target_platform");
+    return getTargetPlatform(packageName, platformName);
+  }
+
   static public TargetPlatform getTargetPlatform() {
-    String packageName = PreferencesData.get("target_package");
-    String platformName = PreferencesData.get("target_platform");
+    String packageName = preferencesData.get("target_package");
+    String platformName = preferencesData.get("target_platform");
     return getTargetPlatform(packageName, platformName);
   }
 
