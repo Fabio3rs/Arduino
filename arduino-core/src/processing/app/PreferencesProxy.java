@@ -32,6 +32,8 @@ public class PreferencesProxy
     String Directory = ".";
     File preferencesFile;
 
+    static PreferencesProxy lastPrefProxy = null;
+
     public boolean has(String key)
     {
         return prefs.containsKey(key);
@@ -49,6 +51,14 @@ public class PreferencesProxy
 
     public void set(String attribute, String value) {
         prefs.put(attribute, value);
+    }
+
+    public boolean getBoolean(String key) {
+        return Boolean.valueOf(get(key));
+    }
+
+    public int getInteger(String attribute) {
+        return Integer.parseInt(get(attribute));
     }
 
     public void setDirectory(String dir)
@@ -87,6 +97,7 @@ public class PreferencesProxy
             BaseNoGui.showError(null, tr("Could not read default settings.\n" +
                 "You'll need to reinstall Arduino."), e);
         }
+        lastPrefProxy = this;
     }
 
     public void save()
@@ -132,7 +143,13 @@ public class PreferencesProxy
 
     public PreferencesProxy()
     {
-        
+        if (lastPrefProxy != null)
+        {
+            this.prefs = lastPrefProxy.prefs;
+            this.preferencesFile = lastPrefProxy.preferencesFile;
+            this.Directory = lastPrefProxy.Directory;
+            this.LOCAL_PREFS_FILE = lastPrefProxy.LOCAL_PREFS_FILE;
+        }
     }
 
     public PreferencesProxy(String dir)

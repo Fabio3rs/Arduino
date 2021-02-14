@@ -163,7 +163,7 @@ public class Compiler implements MessageConsumer {
     this.buildPath = sketch.getBuildPath().getAbsolutePath();
     this.buildCache = BaseNoGui.getCachePath();
 
-    TargetBoard board = BaseNoGui.getTargetBoard();
+    TargetBoard board = BaseNoGui.getTargetBoard(new PreferencesProxy());
     if (board == null) {
       throw new RunnerException("Board is not selected");
     }
@@ -274,7 +274,7 @@ public class Compiler implements MessageConsumer {
 
     cmd.add("-prefs=build.warn_data_percentage=" + PreferencesData.get("build.warn_data_percentage"));
 
-    for (Map.Entry<String, String> entry : BaseNoGui.getBoardPreferences().entrySet()) {
+    for (Map.Entry<String, String> entry : BaseNoGui.getBoardPreferences(new PreferencesProxy()).entrySet()) {
         if (entry.getKey().startsWith("runtime.tools")) {
           cmd.add("-prefs=" + entry.getKey() + "=" + entry.getValue());
         }

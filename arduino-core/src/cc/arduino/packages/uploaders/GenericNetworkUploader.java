@@ -60,7 +60,7 @@ public class GenericNetworkUploader extends Uploader {
   public boolean uploadUsingPreferences(File sourcePath, String buildPath, String className, boolean usingProgrammer, List<String> warningsAccumulator) throws Exception {
     TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform();
     PreferencesMap prefs = PreferencesData.getMap();
-    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(new PreferencesProxy());
     if (boardPreferences != null) {
       prefs.putAll(boardPreferences);
     }

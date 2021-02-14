@@ -34,6 +34,7 @@ import cc.arduino.packages.Uploader;
 import cc.arduino.packages.UploaderFactory;
 import processing.app.BaseNoGui;
 import processing.app.PreferencesData;
+import processing.app.PreferencesProxy;
 import processing.app.Sketch;
 import processing.app.debug.TargetBoard;
 
@@ -51,7 +52,7 @@ public class UploaderUtils {
       boardPort = BaseNoGui.getDiscoveryManager().find(port);
     }
 
-    TargetBoard board = BaseNoGui.getTargetBoard();
+    TargetBoard board = BaseNoGui.getTargetBoard(new PreferencesProxy());
     return new UploaderFactory().newUploader(board, boardPort, noUploadPort);
   }
 

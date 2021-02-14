@@ -53,7 +53,10 @@ public class EditorLineStatus extends JComponent {
   String name = "";
   String port = "";
 
-  public EditorLineStatus() {
+  PreferencesProxy localPreferences;
+
+  public EditorLineStatus(PreferencesProxy px) {
+    localPreferences = px;
     background = Theme.getColor("linestatus.bgcolor");
     font = Theme.getFont("linestatus.font");
     foreground = Theme.getColor("linestatus.color");
@@ -92,12 +95,12 @@ public class EditorLineStatus extends JComponent {
   public void paintComponent(Graphics graphics) {
     Graphics2D g = Theme.setupGraphics2D(graphics);
     if (name.isEmpty() && port.isEmpty()) {
-      PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+      PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(localPreferences);
       if (boardPreferences != null)
         setBoardName(boardPreferences.get("name"));
       else
         setBoardName("-");
-      setPort(PreferencesData.get("serial.port"));
+      setPort(localPreferences.get("serial.port"));
     }
     g.setColor(background);
     Dimension size = getSize();

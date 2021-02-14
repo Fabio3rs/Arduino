@@ -39,6 +39,7 @@ import com.jcraft.jsch.Session;
 import processing.app.BaseNoGui;
 import processing.app.I18n;
 import processing.app.PreferencesData;
+import processing.app.PreferencesProxy;
 import processing.app.debug.RunnerException;
 import processing.app.debug.TargetPlatform;
 import processing.app.helpers.PreferencesMap;
@@ -86,7 +87,7 @@ public class SSHUploader extends Uploader {
 
     TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform();
     PreferencesMap prefs = PreferencesData.getMap();
-    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(new PreferencesProxy());
     if (boardPreferences != null) {
       prefs.putAll(boardPreferences);
     }

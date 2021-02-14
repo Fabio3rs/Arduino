@@ -125,9 +125,16 @@ public class Base {
   private PdeKeywords pdeKeywords;
   private final List<JMenuItem> recentSketchesMenuItems = new LinkedList<>();
 
+  public static String arduinoDirectory;
+
   PreferencesProxy localPreferences = new PreferencesProxy();
 
   static public void main(String args[]) throws Exception {
+    System.out.println(System.getProperty("user.dir"));
+    for (String str : args)
+    {
+      System.out.println(str);
+    }
     if (!OSUtils.isWindows()) {
       // Those properties helps enabling anti-aliasing on Linux
       // (but not on Windows where they made things worse actually
@@ -149,7 +156,7 @@ public class Base {
     }
 
     try {
-      INSTANCE = new Base(args);
+      INSTANCE = new Base(args, System.getProperty("user.dir"));
     } catch (Throwable e) {
       e.printStackTrace(System.err);
       System.exit(255);
@@ -200,7 +207,8 @@ public class Base {
     return BaseNoGui.absoluteFile(path);
   }
 
-  public Base(String[] args) throws Exception {
+  public Base(String[] args, String wdir) throws Exception {
+    arduinoDirectory = wdir;
     Thread deleteFilesOnShutdownThread = new Thread(DeleteFilesOnShutdown.INSTANCE);
     deleteFilesOnShutdownThread.setName("DeleteFilesOnShutdown");
     Runtime.getRuntime().addShutdownHook(deleteFilesOnShutdownThread);
@@ -287,7 +295,7 @@ public class Base {
       rebuildBoardsMenu();
       rebuildProgrammerMenu();
     } else {
-      TargetBoard lastSelectedBoard = BaseNoGui.getTargetBoard();
+      TargetBoard lastSelectedBoard = BaseNoGui.getTargetBoard(localPreferences);
       if (lastSelectedBoard != null)
         BaseNoGui.selectBoard(lastSelectedBoard);
     }
@@ -853,7 +861,8 @@ public class Base {
     File inputFile = new File(directory, filename);
 
     PreferencesData.set("last.folder", inputFile.getAbsolutePath());
-    handleOpen(inputFile);
+    Process process = new ProcessBuilder(Base.arduinoDirectory + "/arduino", inputFile.getAbsolutePath()).start();
+    //handleOpen(inputFile);
   }
 
 
@@ -941,7 +950,8 @@ public class Base {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
           try {
-            handleOpen(recentSketch);
+            Process process = new ProcessBuilder(Base.arduinoDirectory + "/arduino", recentSketch.getAbsolutePath()).start();
+            //handleOpen(recentSketch);
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -1194,8 +1204,8 @@ public class Base {
     TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform(getPrefProxy());
     if (targetPlatform != null) {
       myArch = targetPlatform.getId();
-      boardId = BaseNoGui.getTargetBoard().getName();
-      String core = BaseNoGui.getBoardPreferences().get("build.core", "arduino");
+      boardId = BaseNoGui.getTargetBoard(new PreferencesProxy()).getName();
+      String core = BaseNoGui.getBoardPreferences(new PreferencesProxy()).get("build.core", "arduino");
       if (core.contains(":")) {
         String refcore = core.split(":")[0];
         TargetPlatform referencedPlatform = BaseNoGui.getTargetPlatform(refcore, myArch);
@@ -1725,7 +1735,7 @@ public class Base {
     programmerMenus = new LinkedList<>();
     ButtonGroup group = new ButtonGroup();
 
-    TargetBoard board = BaseNoGui.getTargetBoard();
+    TargetBoard board = BaseNoGui.getTargetBoard(new PreferencesProxy());
     TargetPlatform boardPlatform = board.getContainerPlatform();
     TargetPlatform corePlatform = null;
 

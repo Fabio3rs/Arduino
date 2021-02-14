@@ -33,9 +33,11 @@ import processing.app.AbstractMonitor;
 import processing.app.NetworkMonitor;
 import processing.app.SerialMonitor;
 
+import processing.app.PreferencesProxy;
+
 public class MonitorFactory {
 
-  public AbstractMonitor newMonitor(BoardPort port) {
+  public AbstractMonitor newMonitor(BoardPort port, PreferencesProxy localPreferences) {
     if ("network".equals(port.getProtocol())) {
       if ("yes".equals(port.getPrefs().get("ssh_upload"))) {
         // the board is SSH capable
@@ -46,7 +48,7 @@ public class MonitorFactory {
       }
     }
 
-    return new SerialMonitor(port);
+    return new SerialMonitor(port, localPreferences);
   }
 
 }

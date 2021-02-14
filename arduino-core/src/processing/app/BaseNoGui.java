@@ -133,8 +133,8 @@ public class BaseNoGui {
     return count;
   }
 
-  static public PreferencesMap getBoardPreferences() {
-    TargetBoard board = getTargetBoard();
+  static public PreferencesMap getBoardPreferences(PreferencesProxy px) {
+    TargetBoard board = getTargetBoard(px);
     if (board == null)
       return null;
     String boardId = board.getId();
@@ -147,7 +147,7 @@ public class BaseNoGui {
         continue;
 
       // Get "custom_[MENU_ID]" preference (for example "custom_cpu")
-      String entry = PreferencesData.get("custom_" + menuId);
+      String entry = px.get("custom_" + menuId);
       if (entry != null && entry.startsWith(boardId)) {
 
         String selectionId = entry.substring(boardId.length() + 1);
@@ -191,8 +191,8 @@ public class BaseNoGui {
       String toolPath = folder.getAbsolutePath();
       prefs.put(prefix + tool.getName() + ".path", toolPath);
       prefs.put(prefix + tool.getName() + "-" + tool.getVersion() + ".path", toolPath);
-      PreferencesData.set(prefix + tool.getName() + ".path", toolPath);
-      PreferencesData.set(prefix + tool.getName() + "-" + tool.getVersion() + ".path", toolPath);
+      px.set(prefix + tool.getName() + ".path", toolPath);
+      px.set(prefix + tool.getName() + "-" + tool.getVersion() + ".path", toolPath);
     }
     return prefs;
   }
@@ -373,11 +373,11 @@ public class BaseNoGui {
     return sketchbookPath;
   }
 
-  public static TargetBoard getTargetBoard() {
-    TargetPlatform targetPlatform = getTargetPlatform();
+  public static TargetBoard getTargetBoard(PreferencesProxy px) {
+    TargetPlatform targetPlatform = getTargetPlatform(px);
     if (targetPlatform == null)
       return null;
-    String boardId = PreferencesData.get("board");
+    String boardId = px.get("board");
     return targetPlatform.getBoard(boardId);
   }
 
@@ -659,7 +659,7 @@ public class BaseNoGui {
 
     TargetPlatform targetPlatform = getTargetPlatform();
     if (targetPlatform != null) {
-      String core = getBoardPreferences().get("build.core", "arduino");
+      String core = getBoardPreferences(new PreferencesProxy()).get("build.core", "arduino");
       if (core.contains(":")) {
         String referencedCore = core.split(":")[0];
         TargetPlatform referencedPlatform = getTargetPlatform(referencedCore, targetPlatform.getId());

@@ -28,26 +28,31 @@ import java.awt.event.KeyEvent;
 
 import static processing.app.I18n.tr;
 
+import processing.app.PreferencesProxy;
+
 @SuppressWarnings("serial")
 public class SerialMonitor extends AbstractTextMonitor {
 
   private Serial serial;
   private int serialRate;
 
+  PreferencesProxy localPreferences;
+
   private static final int COMMAND_HISTORY_SIZE = 100;
   private final CommandHistory commandHistory =
       new CommandHistory(COMMAND_HISTORY_SIZE);
 
-  public SerialMonitor(BoardPort port) {
+  public SerialMonitor(BoardPort port, PreferencesProxy lp) {
     super(port);
+    localPreferences = lp;
 
-    serialRate = PreferencesData.getInteger("serial.debug_rate");
+    serialRate = localPreferences.getInteger("serial.debug_rate");
     serialRates.setSelectedItem(serialRate + " " + tr("baud"));
     onSerialRateChange((ActionEvent event) -> {
       String wholeString = (String) serialRates.getSelectedItem();
       String rateString = wholeString.substring(0, wholeString.indexOf(' '));
       serialRate = Integer.parseInt(rateString);
-      PreferencesData.set("serial.debug_rate", rateString);
+      localPreferences.set("serial.debug_rate", rateString);
       if (serial != null) {
         try {
           close();
@@ -115,9 +120,9 @@ public class SerialMonitor extends AbstractTextMonitor {
         default:
           break;
       }
-      if ("".equals(s) && lineEndings.getSelectedIndex() == 0 && !PreferencesData.has("runtime.line.ending.alert.notified")) {
+      if ("".equals(s) && lineEndings.getSelectedIndex() == 0 && !localPreferences.has("runtime.line.ending.alert.notified")) {
         noLineEndingAlert.setForeground(Color.RED);
-        PreferencesData.set("runtime.line.ending.alert.notified", "true");
+        localPreferences.set("runtime.line.ending.alert.notified", "true");
       }
       serial.write(s);
     }
@@ -143,7 +148,7 @@ public class SerialMonitor extends AbstractTextMonitor {
     if (serial != null) {
       int[] location = getPlacement();
       String locationStr = PApplet.join(PApplet.str(location), ",");
-      PreferencesData.set("last.serial.location", locationStr);
+      localPreferences.set("last.serial.location", locationStr);
       serial.dispose();
       serial = null;
     }

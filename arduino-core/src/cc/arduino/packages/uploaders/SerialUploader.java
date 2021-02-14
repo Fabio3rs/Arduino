@@ -67,7 +67,7 @@ public class SerialUploader extends Uploader {
     // FIXME: Preferences should be reorganized
     TargetPlatform targetPlatform = BaseNoGui.getTargetPlatform();
     PreferencesMap prefs = PreferencesData.getMap();
-    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(new PreferencesProxy());
     if (boardPreferences != null) {
       prefs.putAll(boardPreferences);
     }
@@ -288,7 +288,7 @@ public class SerialUploader extends Uploader {
     }
 
     PreferencesMap prefs = PreferencesData.getMap();
-    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(new PreferencesProxy());
     if (boardPreferences != null) {
       prefs.putAll(boardPreferences);
     }
@@ -336,7 +336,7 @@ public class SerialUploader extends Uploader {
 
     // Build configuration for the current programmer
     PreferencesMap prefs = PreferencesData.getMap();
-    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences();
+    PreferencesMap boardPreferences = BaseNoGui.getBoardPreferences(new PreferencesProxy());
     if (boardPreferences != null) {
       prefs.putAll(boardPreferences);
     }

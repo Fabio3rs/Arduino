@@ -343,9 +343,9 @@ public class EditorStatus extends JPanel {
     copyErrorButton.addActionListener(e -> {
       String message1 = "";
       message1 += tr("Arduino: ") + BaseNoGui.VERSION_NAME_LONG + " (" + System.getProperty("os.name") + "), ";
-      message1 += tr("Board: ") + "\"" + BaseNoGui.getBoardPreferences().get("name") + "\"\n\n";
+      message1 += tr("Board: ") + "\"" + BaseNoGui.getBoardPreferences(editor.localPreferences).get("name") + "\"\n\n";
       message1 += editor.console.getText();
-      if (!(PreferencesData.getBoolean("build.verbose"))) {
+      if (!(editor.localPreferences.getBoolean("build.verbose"))) {
         message1 += "\n\n";
         message1 += tr("This report would have more information with\n" +
                        "\"Show verbose output during compilation\"\n" +

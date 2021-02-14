@@ -244,12 +244,20 @@ public class Editor extends JFrame implements RunnerListener {
   public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
     super("Arduino");
     localPreferences.init(file.getAbsolutePath());
+
+    for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+      System.err.println(elem);
+    }
     //ibase.preferencesData = localPreferences;
 
+    ibase.localPreferences = localPreferences;
     this.base = ibase;
     this.platform = platform;
 
     Base.setIcon(this);
+
+    ibase.rebuildBoardsMenu();
+    ibase.rebuildProgrammerMenu();
 
     // Install default actions for Run, Present, etc.
     resetHandlers();
@@ -328,7 +336,7 @@ public class Editor extends JFrame implements RunnerListener {
     console.setBorder(null);
     consolePanel.add(console, BorderLayout.CENTER);
 
-    lineStatus = new EditorLineStatus();
+    lineStatus = new EditorLineStatus(localPreferences);
     consolePanel.add(lineStatus, BorderLayout.SOUTH);
 
     codePanel = new JPanel(new BorderLayout());
@@ -1084,11 +1092,11 @@ public class Editor extends JFrame implements RunnerListener {
 
     portMenu.removeAll();
 
-    String selectedPort = PreferencesData.get("serial.port");
+    String selectedPort = localPreferences.get("serial.port");
 
     List<BoardPort> ports = Base.getDiscoveryManager().discovery();
 
-    ports = platform.filterPorts(ports, PreferencesData.getBoolean("serial.ports.showall"));
+    ports = platform.filterPorts(ports, localPreferences.getBoolean("serial.ports.showall"));
 
     ports.stream() //
         .filter(port -> port.getProtocolLabel() == null || port.getProtocolLabel().isEmpty())
@@ -1991,7 +1999,7 @@ public class Editor extends JFrame implements RunnerListener {
         items.add((BoardPortJCheckBoxMenuItem) portMenu.getItem(i));
     }
 
-    String port = PreferencesData.get("serial.port");
+    String port = localPreferences.get("serial.port");
     String title;
     if (port == null || port.isEmpty()) {
       title = tr("Serial port not selected.");
@@ -2111,13 +2119,13 @@ public class Editor extends JFrame implements RunnerListener {
       } catch (InterruptedException e) {
           // noop
       }
-      BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+      BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(localPreferences.get("serial.port"));
       long sleptFor = 0;
       while (boardPort == null && sleptFor < MAX_TIME_AWAITING_FOR_RESUMING_SERIAL_MONITOR) {
         try {
           Thread.sleep(100);
           sleptFor += 100;
-          boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+          boardPort = BaseNoGui.getDiscoveryManager().find(localPreferences.get("serial.port"));
         } catch (InterruptedException e) {
           // noop
         }
@@ -2141,7 +2149,7 @@ public class Editor extends JFrame implements RunnerListener {
   private void resumeOrCloseSerialPlotter() {
     // Return the serial plotter window to its initial state
     if (serialPlotter != null) {
-      BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+      BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(localPreferences.get("serial.port"));
       try {
         if (serialPlotter != null)
           serialPlotter.resume(boardPort);
@@ -2203,19 +2211,19 @@ public class Editor extends JFrame implements RunnerListener {
       }
     }
 
-    BoardPort port = Base.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+    BoardPort port = Base.getDiscoveryManager().find(localPreferences.get("serial.port"));
 
     if (port == null) {
-      statusError(I18n.format(tr("Board at {0} is not available"), PreferencesData.get("serial.port")));
+      statusError(I18n.format(tr("Board at {0} is not available"), localPreferences.get("serial.port")));
       return;
     }
 
-    serialMonitor = new MonitorFactory().newMonitor(port);
+    serialMonitor = new MonitorFactory().newMonitor(port, localPreferences);
 
     if (serialMonitor == null) {
       String board = port.getPrefs().get("board");
       String boardName = BaseNoGui.getPlatform().resolveDeviceByBoardID(BaseNoGui.packages, board);
-      statusError(I18n.format(tr("Serial monitor is not supported on network ports such as {0} for the {1} in this release"), PreferencesData.get("serial.port"), boardName));
+      statusError(I18n.format(tr("Serial monitor is not supported on network ports such as {0} for the {1} in this release"), localPreferences.get("serial.port"), boardName));
       return;
     }
 
@@ -2313,10 +2321,10 @@ public class Editor extends JFrame implements RunnerListener {
       }
     }
 
-    BoardPort port = Base.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+    BoardPort port = Base.getDiscoveryManager().find(localPreferences.get("serial.port"));
 
     if (port == null) {
-      statusError(I18n.format(tr("Board at {0} is not available"), PreferencesData.get("serial.port")));
+      statusError(I18n.format(tr("Board at {0} is not available"), localPreferences.get("serial.port")));
       return;
     }
 
@@ -2409,7 +2417,7 @@ public class Editor extends JFrame implements RunnerListener {
   private void handleBoardInfo() {
     console.clear();
 
-    String selectedPort = PreferencesData.get("serial.port");
+    String selectedPort = localPreferences.get("serial.port");
     List<BoardPort> ports = Base.getDiscoveryManager().discovery();
 
     String label = "";
@@ -2594,12 +2602,12 @@ public class Editor extends JFrame implements RunnerListener {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   protected void onBoardOrPortChange() {
-    TargetBoard board = BaseNoGui.getTargetBoard();
+    TargetBoard board = BaseNoGui.getTargetBoard(localPreferences);
     if (board != null)
       lineStatus.setBoardName(board.getName());
     else
       lineStatus.setBoardName("-");
-    lineStatus.setPort(PreferencesData.get("serial.port"));
+    lineStatus.setPort(localPreferences.get("serial.port"));
     lineStatus.repaint();
   }
 
